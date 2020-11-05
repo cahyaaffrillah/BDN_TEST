@@ -1,0 +1,41 @@
+Jawaban Soal
+1. SELECT a.id_transaksi,a.transaction_no as transaction_no,a.jenis_transaksi as jenis_transaksi,
+b.email,a.total_harga,c.name as channel_name,d.name as provider_name,a.paid_at FROM public.transaksi a 
+JOIN public.customer b ON a.id_customer=b.id_customer JOIN public.payment_channel c ON a.id_channel=c.id_channel 
+JOIN public.payment_provider d ON a.id_provider=d.id_provider WHERE a.paid_at = TIMESTAMP'YESTERDAY'
+
+2.SELECT code,name FROM public.payment_channel WHERE id_channel NOT IN (SELECT id_channel FROM public.transaksi 
+WHERE paid_at=TIMESTAMP'YESTERDAY')
+
+3. SELECT a.email as email,COUNT(b.id_transaksi) as transaction_amount FROM public.customer as a 
+LEFT JOIN transaksi as b ON a.id_customer=b.id_customer 
+GROUP BY a.id_customer ORDER BY transaction_amount DESC, email ASC LIMIT 10
+
+4. SELECT a.code as channel_code,b.admin_fee FROM public.payment_channel as a 
+RIGHT JOIN public.transaksi b ON a.id_channel=b.id_channel
+
+5. Transaksi Tabel membutuhkan beberapa index, 
+diantaranya index id_item, id_channel,id_provider dan id_payment_provider,Index ini 
+dibutuhkan untuk menormalisasikan tabel dan untuk mempercepat query yang akan di gunakan. 
+Berikut susunan sql dari tabel transaksi yang saya buat
+    id_transaksi integer NOT NULL DEFAULT nextval('sequence_transaksi'::regclass),
+    transaction_no character varying(45) COLLATE pg_catalog."default",
+    status jenis_transaksi,
+    item_qty integer,
+    created_at timestamp without time zone,
+    paid_at timestamp without time zone,
+    expired_at timestamp without time zone,
+    total_harga integer,
+    id_item integer NOT NULL,
+    id_customer integer NOT NULL,
+    id_channel integer NOT NULL,
+    id_provider integer NOT NULL,
+    id_fee integer NOT NULL,
+    jenis_transaksi character varying(50) COLLATE pg_catalog."default",
+
+6.Secara Keseluruhan query dan schema terlihat baik, tapi untuk memperbaiki 
+performanya saya menggunakan beberapa tabel master terbaru yang nantinya dapat 
+membantu untuk eksekusi query dan untuk maintenance, beberapa tabel baru ini seperti
+a.Tabel Payment Channel yang berfungsi untuk menyangkup semua data payment channel
+b.Tabel Payment Provider yang berfungsi untuk menyangkup semua data payment provider
+c.Tabel Item untuk memudahkan mengorganisir item, lebih baik dari sebelumnya tabel item tidaklah ada
